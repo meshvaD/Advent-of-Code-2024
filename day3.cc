@@ -7,21 +7,8 @@ using namespace std;
 
 // mul\([0-9]*,[0-9]*\)
 
-int parseSingleMult(string match) {
-    stringstream ss(match);
-    char c;
-    int mult1, mult2;
-    for (int i=0; i<4; ++i) ss >> c;
-    ss >> mult1;
-    ss >> c;
-    ss >> mult2;
-
-    // cout << mult1 << " " << mult2 << endl;
-    return mult1 * mult2;
-}
-
 int part1(string s1) {
-    regex e ("mul\\([0-9]*,[0-9]*\\)");
+    regex e ("mul\\(([0-9]*),([0-9]*)\\)");
 
     std::sregex_iterator iter(s1.begin(), s1.end(), e);
     std::sregex_iterator end;
@@ -30,7 +17,7 @@ int part1(string s1) {
     while(iter != end)
     {
         string match = (*iter)[0];
-        sum += parseSingleMult(match);
+        sum += stoi((*iter)[1]) * stoi((*iter)[2]);
         ++iter;
     }
 
@@ -38,7 +25,7 @@ int part1(string s1) {
 }
 
 int part2(string s1) {
-    regex e ("mul\\([0-9]*,[0-9]*\\)|do\\(\\)|don't\\(\\)");
+    regex e ("mul\\(([0-9]*),([0-9]*)\\)|do\\(\\)|don't\\(\\)");
 
     std::sregex_iterator iter(s1.begin(), s1.end(), e);
     std::sregex_iterator end;
@@ -50,7 +37,7 @@ int part2(string s1) {
         string match = (*iter)[0];
         if (match == "do()") enable = true;
         else if (match == "don't()") enable = false;
-        else if (enable) sum += parseSingleMult(match);
+        else if (enable) sum += stoi((*iter)[1]) * stoi((*iter)[2]);
         ++iter;
     }
 
