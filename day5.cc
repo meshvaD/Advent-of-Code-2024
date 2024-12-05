@@ -2,10 +2,52 @@
 #include <vector>
 #include <sstream>
 #include <unordered_map>
+#include <algorithm>
 using namespace std;
 
-void parse(unordered_map<int, vector<int>>& rules, vector<vector<int>>& inputs) {
+class Ordering {
+    static unordered_map<int, vector<int>> rules;
+    static vector<vector<int>> inputs;
+public:
+    struct sortWithRules
+    {
+        inline bool operator() (const int a, const int b)
+        {
+            auto aRules = rules[a];
+            auto iter = find(aRules.begin(), aRules.end(), b); // determine if a must be before b
+            return iter != aRules.end();
+        }
+    };
+
+    static int part2() {
+        int out = 0;
+        for (vector<int>& vec : inputs) {
+            bool isSorted = is_sorted(vec.begin(), vec.end(), sortWithRules());
+            if (!isSorted) {
+                sort(vec.begin(), vec.end(), sortWithRules());
+                int mid = vec[vec.size()/2];
+                out += mid;
+            }
+        }
+        return out;
+    }
+
+    static int part1() {
+        int out = 0;
+        for (const auto& vec : inputs) {
+            bool succ = is_sorted(vec.begin(), vec.end(), sortWithRules());
+            if (succ) {
+                int mid = vec[vec.size()/2];
+                out += mid;
+            }
+        }
+        return out;
+    }
+};
+
+unordered_map<int, vector<int>> parseRules() {
     // X | Y : X must be produced before Y (if produced)
+    unordered_map<int, vector<int>> rules;
 
     string s;
     while (getline(cin, s)) {
@@ -23,7 +65,12 @@ void parse(unordered_map<int, vector<int>>& rules, vector<vector<int>>& inputs) 
             rules[before] = {after};
         }
     }
+    return rules;
+}
 
+vector<vector<int>> parseInputs() {
+    string s;
+    vector<vector<int>> inputs;
     while (getline(cin, s)) {
         stringstream ss(s);
 
@@ -36,93 +83,14 @@ void parse(unordered_map<int, vector<int>>& rules, vector<vector<int>>& inputs) 
         }
         inputs.emplace_back(curr);
     }
-}
-// form map to quickly find index of any number in vec
-unordered_map<int, int> inverseMapping(const vector<int>& vec) {
-    unordered_map<int, int> index;
-    for (int i=0; i<vec.size(); ++i)
-        index[vec[i]] = i;
-    return index;
+    return inputs;
 }
 
-
-bool checkValidOrdering(unordered_map<int, vector<int>>& rules, const vector<int>& vec) {
-    unordered_map<int, int> index = inverseMapping(vec);
-
-    // iter over vec starting from beginning & check rules
-    for (int i=0; i<vec.size(); ++i) {
-        vector<int> mustBefore = rules[vec[i]];
-        for (const auto& n : mustBefore) {
-            if (auto iter = index.find(n); iter != index.end() && iter->second < i) return false;
-        }
-    }
-    return true;
-}
-
-bool makeValidOrdering(unordered_map<int, vector<int>>& rules, vector<int>& vec) {
-    unordered_map<int, int> index = inverseMapping(vec);
-    vector<int> proper;
-    bool improper = false;
-
-    for (int i=0; i<vec.size(); ++i) {
-        vector<int> mustBefore = rules[vec[i]];
-        int minIndex = i;
-
-        for (const auto& n : mustBefore) {
-            // cout << " b: " << n <<  " index: " << index[n] << endl;
-            if (auto iter = index.find(n); iter != index.end() && iter->second < index[vec[i]]) {
-                minIndex = min(minIndex, iter->second);
-            }
-        }
-
-        if (minIndex != i) improper = true;
-
-        // insert elem at minIndex & shift index values of all rest
-        proper.insert(proper.begin() + minIndex, vec[i]);
-        for (int j=minIndex; j<i; ++j)
-            index[vec[j]] = j + 1;
-    }
-
-    vec = proper;
-
-    return improper;
-}
-
-int part1(unordered_map<int, vector<int>>& rules, const vector<vector<int>>& inputs) {
-    int out = 0;
-    for (const auto& vec : inputs) {
-        bool succ = checkValidOrdering(rules, vec);
-        if (succ) {
-            int mid = vec[vec.size()/2];
-            out += mid;
-        }
-    }
-    return out;
-}
-
-int part2(unordered_map<int, vector<int>>& rules, vector<vector<int>>& inputs) {
-    int out = 0;
-    for (vector<int>& vec : inputs) {
-        bool improper = makeValidOrdering(rules, vec);
-        bool updated = false;
-        while (improper) {
-            improper = makeValidOrdering(rules, vec);
-            updated = true;
-        }
-        if (updated) {
-            int mid = vec[vec.size()/2];
-            out += mid;
-        }
-    }
-    return out;
-}
+unordered_map<int, vector<int>> Ordering::rules = parseRules();
+vector<vector<int>> Ordering::inputs = parseInputs();
 
 int main() {
-    unordered_map<int, vector<int>> rules;
-    vector<vector<int>> inputs;
-
-    parse(rules, inputs);
-    
-    cout << "part1: " << part1(rules, inputs) << endl;
-    cout << "part2: " << part2(rules, inputs) << endl;
+    Ordering o;
+    cout << "part1: " << Ordering::part1() << endl;
+    cout << "part2: " << Ordering::part2() << endl;
 }
