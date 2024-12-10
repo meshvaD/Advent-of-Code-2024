@@ -44,7 +44,6 @@ uint64_t getChecksumP1(vector<uint64_t> input) {
 }
 
 // 00 99[1] 2111777.44.333....5555.6666..... 8888[16] ..
-// TODO PART 2 : https://github.com/jwezorek/advent_of_code/blob/main/src/2024/day_09.cpp
 
 class FreeList {
     struct Info {
