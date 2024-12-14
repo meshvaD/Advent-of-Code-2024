@@ -101,7 +101,6 @@ void part2(vector<Bot> bots) {
     // no overlapping bots??
 
     for (int i=1; i<10000; ++i) {
-        cout << "iter: " << i << endl;
         ofstream outFile("dump.txt", std::ios::trunc);
         vector<vector<int>> grid(ROWS, vector<int>(COLS, 0));
 
@@ -117,7 +116,7 @@ void part2(vector<Bot> bots) {
             }
         }
         if (found) {
-            cout << "FOUND" << endl;
+            cout << "FOUND at: " << i << endl;
             viz(grid, outFile);
             break;
         }
